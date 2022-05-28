@@ -9,7 +9,11 @@ import json
 password_alphabet=string.ascii_letters+string.digits+string.punctuation
 
 def generatePass(length):
-	return ''.join([s.choice(password_alphabet) for i in range(length)])
+	try:
+		return ''.join([s.choice(password_alphabet) for i in range(int(length))])
+	except ValueError:
+		print('Invalid input!')
+		bmenu()
 
 def encryptPass(password, keyword):
 	with open('hardware_key.key','rb') as file: #get hardware key
@@ -79,7 +83,7 @@ def menu():
 Choice > '''))
 	
 	if choice == 1:
-		length = int(input('Input password length > '))
+		length = input('Input password length > ')
 		generated_password = generatePass(length)
 		print('Generated password is:', generated_password)
 		bmenu()
