@@ -86,6 +86,10 @@ Choice > '''))
 		
 	elif choice == 2:
 		keyword = input('Input your keyword > ')
+		for i in keyword:
+			if i not in string.ascii_letters+string.digits+'_':
+				print('Invalid keyword name!')
+				bmenu()
 		username = input('Enter the username > ').encode()
 		password = gp.getpass(prompt='Enter the password > ').encode()
 
