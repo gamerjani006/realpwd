@@ -105,15 +105,14 @@ Choice > '''))
 	
 	elif choice == 3:
 		with open('hardware_key.key','wb') as file:
-			file.write(os.urandom(1024))
+			file.write(os.urandom(2048))
 		print('Generated new hardware key!')
 		bmenu()
 
 	elif choice == 4:
 		opened_vault = openVault()
-		print(opened_vault)
 		for i in opened_vault:
-			format = f"""--BEGIN ACCOUNT--\nKeyword: {i}\nUsername: {opened_vault.get(i)[1].encode().decode('punycode')}\nPassword: {opened_vault.get(i)[0].encode().decode('punycode')}\n--STOP ACCOUNT--\n"""
+			format = f"--BEGIN ACCOUNT--\nKeyword: {i}\nUsername: {opened_vault.get(i)[1].encode().decode('punycode')}\nPassword: {opened_vault.get(i)[0].encode().decode('punycode')}\n--STOP ACCOUNT--\n"
 			print(format)
 		bmenu()
 		
