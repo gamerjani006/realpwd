@@ -8,17 +8,15 @@ import json
 
 password_alphabet=string.ascii_letters+string.digits+string.punctuation
 
+os.system('cls')
+
 def generatePass(length):
-	try:
-		return ''.join([s.choice(password_alphabet) for i in range(int(length))])
-	except ValueError:
-		print('Invalid input!')
-		bmenu()
+	return ''.join([s.choice(password_alphabet) for i in range(length)])
 
 def encryptPass(password, keyword):
 	with open('hardware_key.key','rb') as file: #get hardware key
 		key = file.read()
-		
+	
 	salt = hashlib.sha3_512(password + keyword.encode()).digest() #create salt from password
 
 	password = salt + password #append salt to password
@@ -62,8 +60,9 @@ def openVault():
 		for i in range(len(key)): #decrypt password with hardware key
 			password[i % len(password)] ^= key[i]
 		
-		password = ''.join([chr(i) for i in password[64:password.index(2)]])
-		temp[keyword] = password.split('\x00')
+		password = ''.join([chr(i) for i in password[64:password.index(2)]])#''.join([chr(i) for i in password[64:password.index(2)]])
+		split = password.split('\x00')
+		temp[keyword] = split#[split[1], split[0]]
 	return temp
 
 def bmenu():
@@ -83,19 +82,15 @@ def menu():
 Choice > '''))
 	
 	if choice == 1:
-		length = input('Input password length > ')
+		length = int(input('Input password length > '))
 		generated_password = generatePass(length)
 		print('Generated password is:', generated_password)
 		bmenu()
 		
 	elif choice == 2:
 		keyword = input('Input your keyword > ')
-		for i in keyword:
-			if i not in string.ascii_letters+string.digits+'_':
-				print('Invalid keyword name!')
-				bmenu()
-		username = input('Enter the username > ').encode()
-		password = gp.getpass(prompt='Enter the password > ').encode()
+		username = input('Enter the username > ').encode('punycode')
+		password = gp.getpass(prompt='Enter the password > ').encode('punycode')
 
 		format = password + b"\x00" + username
 		
@@ -109,24 +104,16 @@ Choice > '''))
 		bmenu()
 	
 	elif choice == 3:
-		choice = input('Are you sure? Your vault will be deleted! [Y/N] > ')[0].lower()
-		
-		if choice == 'y':
-			with open('hardware_key.key','wb') as file:
-				file.write(os.urandom(1024))
-			with open('database.json','w') as file:
-				file.write('{}')
-			print('Generated new hardware key!')
-			bmenu()
-		else:
-			print('Cancelled!')
-			bmenu()
+		with open('hardware_key.key','wb') as file:
+			file.write(os.urandom(1024))
+		print('Generated new hardware key!')
+		bmenu()
 
 	elif choice == 4:
 		opened_vault = openVault()
-		print()
+		print(opened_vault)
 		for i in opened_vault:
-			format = f"--BEGIN ACCOUNT--\nKeyword: {i}\nUsername: {opened_vault.get(i)[0]}\nPassword: {opened_vault.get(i)[1]}\n--STOP ACCOUNT--\n"
+			format = f"""--BEGIN ACCOUNT--\nKeyword: {i}\nUsername: {opened_vault.get(i)[1].encode().decode('punycode')}\nPassword: {opened_vault.get(i)[0].encode().decode('punycode')}\n--STOP ACCOUNT--\n"""
 			print(format)
 		bmenu()
 		
