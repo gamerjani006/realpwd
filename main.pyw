@@ -22,9 +22,13 @@ def gen_pass(length):
 	return ''.join([s.choice(password_alphabet) for i in range(length)])
 	return password
 	
-def open_vault():
+def open_vault(master_key):
 	with open('hardware_key.key','rb') as file: #get hardware key
 		key = file.read()
+	key = [i for i in key]
+	dec = [i ^ master_key[c % len(master_key)] for c,i in enumerate(key)]
+	#key = [i ^ master_key[c % len(master_key)] for c,i in enumerate(key)]
+	#print(key)
 	with open("database.json", 'r') as f:
 		a=json.load(f)
 
@@ -48,7 +52,8 @@ def open_vault():
 def encryptPass(password, keyword):
 	with open('hardware_key.key','rb') as file: #get hardware key
 		key = file.read()
-		
+	
+	master_key = bytes(master_key)
 	salt = hashlib.sha3_512(password + keyword.encode()).digest() #create salt from password
 
 	password = salt + password #append salt to password
@@ -79,19 +84,19 @@ def encryptPass(password, keyword):
 	return data
 
 def main_menu():
-	layout = [[sg.Button('Generate Password', key = 'genPass')],
+	layout = [[sg.Button('Generate Password', key = 'genPass'), sg.Text('Master Password:'), sg.InputText('12345678', key='masterPass', password_char='*',  size=(15,0))],
 			  [sg.Text('Input password length:'), sg.Slider(range=(8,64), default_value=12, resolution=1, orientation='horizontal', key='passLen')],
 			  [sg.Text('Password will appear here:'), sg.InputText('', key='passwordText')],
 			  [sg.Text('-'*128)],
 			  [sg.Button('Open Vault', key='openVault'), sg.Multiline('', size=(50,10), key='vaultText')],
 			  [sg.Text('-'*128)],
-			  [sg.Button('Save Password', key='savePass'), sg.InputText('Keyword', key='spKeyword', size=(15,0)), sg.InputText('Username', key='spUsername', size=(15,0)), sg.InputText('Password', key='spPassword', size=(15,0),  password_char='*')],
+			  [sg.Button('Save Password', key='savePass'), sg.InputText('Keyword', key='spKeyword', size=(15,0)), sg.InputText('Username', key='spUsername', size=(15,0)), sg.InputText('Password', key='spPassword', size=(15,0), password_char='*')],
 			  [sg.Text('-'*128)],
 			  [sg.Button('New Hardware Key', key='hkStart'), sg.Checkbox('Are you sure? Your vault will be wiped!', key='hkConfirm')],
 			  [sg.Button('Exit Program', key = 'quitpr')]]
 	
 	print('DEBUG: Program Started')
-	window = sg.Window('Main Menu', layout, use_custom_titlebar=True)
+	window = sg.Window('Main Menu', layout, use_custom_titlebar=False)
 	
 	while 1:
 		event, values = window.read()
@@ -101,7 +106,7 @@ def main_menu():
 		
 		elif event == 'openVault':
 			
-			opened_vault = open_vault()
+			opened_vault = open_vault([ord(i) for i in values['masterPass']])
 			temp=''
 			for i in opened_vault:
 				format = f"--BEGIN ACCOUNT--\nKeyword: {i}\nUsername: {opened_vault.get(i)[1].encode().decode('punycode')}\nPassword: {opened_vault.get(i)[0].encode().decode('punycode')}\n--STOP ACCOUNT--\n\n"
@@ -133,7 +138,11 @@ def main_menu():
 			choice = values['hkConfirm']
 			if choice == True:
 				with open('hardware_key.key','wb') as file:
-					file.write(os.urandom(2048))
+					master_key = [ord(i) for i in values['masterPass']]
+					bytes1 = os.urandom(2048)
+					bytes1 = [i for i in bytes1]
+					enc = [i ^ master_key[c % len(master_key)] for c,i in enumerate(bytes1)]
+					file.write(bytes(enc))
 				with open('database.json', 'w') as file:
 					file.write('{}')
 				sg.popup('New hardware key set!')
@@ -149,4 +158,3 @@ def main_menu():
 			quit('Unknown Error!')
 
 main_menu()
-#
