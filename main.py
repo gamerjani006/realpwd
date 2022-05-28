@@ -101,10 +101,18 @@ Choice > '''))
 		bmenu()
 	
 	elif choice == 3:
-		with open('hardware_key.key','wb') as file:
-			file.write(os.urandom(1024))
-		print('Generated new hardware key!')
-		bmenu()
+		choice = input('Are you sure? Your vault will be deleted! [Y/N] > ')[0].lower()
+		
+		if choice == 'y':
+			with open('hardware_key.key','wb') as file:
+				file.write(os.urandom(1024))
+			with open('database.json','w') as file:
+				file.write('{}')
+			print('Generated new hardware key!')
+			bmenu()
+		else:
+			print('Cancelled!')
+			bmenu()
 
 	elif choice == 4:
 		opened_vault = openVault()
