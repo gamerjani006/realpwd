@@ -91,7 +91,7 @@ def main_menu():
 			  [sg.Button('Exit Program', key = 'quitpr')]]
 	
 	print('DEBUG: Program Started')
-	window = sg.Window('Main Menu', layout)
+	window = sg.Window('Main Menu', layout, use_custom_titlebar=True)
 	
 	while 1:
 		event, values = window.read()
