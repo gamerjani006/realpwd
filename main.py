@@ -122,7 +122,7 @@ Choice > '''))
 		opened_vault = openVault()
 		print()
 		for i in opened_vault:
-			format = f"--BEGIN ACCOUNT--\nKeyword: {i}\nUsername: {opened_vault.get(i)[1]}\nPassword: {opened_vault.get(i)[0]}\n--STOP ACCOUNT--\n"
+			format = f"--BEGIN ACCOUNT--\nKeyword: {i}\nUsername: {opened_vault.get(i)[0]}\nPassword: {opened_vault.get(i)[1]}\n--STOP ACCOUNT--\n"
 			print(format)
 		bmenu()
 		
