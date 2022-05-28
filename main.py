@@ -42,7 +42,7 @@ def encryptPass(password, keyword):
 				os.system('cls||clear')
 				menu()
 		data[keyword] = password
-	return True
+	return data
 
 def openVault():
 	with open('hardware_key.key','rb') as file: #get hardware key
@@ -59,7 +59,7 @@ def openVault():
 			password[i % len(password)] ^= key[i]
 		
 		password = ''.join([chr(i) for i in password[64:password.index(2)]])
-		temp[keyword] = password
+		temp[keyword] = password.split('\x00')
 	return temp
 
 def bmenu():
@@ -73,7 +73,7 @@ def bmenu():
 def menu():
 	choice = int(input('''Choose one:
 	1. Generate Password
-	2. Encrypt a password
+	2. Save/Override a password
 	3. Generate new hardware key
 	4. Open vault
 Choice > '''))
@@ -86,9 +86,12 @@ Choice > '''))
 		
 	elif choice == 2:
 		keyword = input('Input your keyword > ')
+		username = input('Enter the username > ').encode()
 		password = gp.getpass(prompt='Enter the password > ').encode()
+
+		format = password + b"\x00" + username
 		
-		encrypted_password = encryptPass(password, keyword)
+		encrypted_password = encryptPass(format, keyword)
 		encrypted_password = json.dumps(encrypted_password)
 
 		with open('database.json','w+') as file:
@@ -105,7 +108,10 @@ Choice > '''))
 
 	elif choice == 4:
 		opened_vault = openVault()
-		print(opened_vault)
+		print()
+		for i in opened_vault:
+			format = f"--BEGIN ACCOUNT--\nKeyword: {i}\nUsername: {opened_vault.get(i)[1]}\nPassword: {opened_vault.get(i)[0]}\n--STOP ACCOUNT--\n"
+			print(format)
 		bmenu()
 		
 	else:
