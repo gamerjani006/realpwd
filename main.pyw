@@ -49,7 +49,7 @@ def open_vault(master_key):
 		temp[keyword] = split#[split[1], split[0]]
 	return temp
 	
-def encryptPass(password, keyword):
+def encryptPass(password, keyword, master_key):
 	with open('hardware_key.key','rb') as file: #get hardware key
 		key = file.read()
 	
@@ -125,7 +125,7 @@ def main_menu():
 
 			format = password + b"\x00" + username
 			
-			encrypted_password = encryptPass(format, keyword)
+			encrypted_password = encryptPass(format, keyword, [ord(i) for i in values['masterPass']])
 			encrypted_password = json.dumps(encrypted_password)
 
 			with open('database.json','w+') as file:
