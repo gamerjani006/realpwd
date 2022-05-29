@@ -1,0 +1,9 @@
+pip install PySimpleGUI
+pip install secrets
+pip install os
+pip install hashlib
+pip install string
+pip install base64
+pip install getpass
+pip install json
+pip install password_strength
