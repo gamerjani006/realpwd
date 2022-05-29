@@ -20,29 +20,32 @@ def open_vault(master_key):
 	with open('hardware_key.key','rb') as file: #get hardware key
 		key = file.read()
 	key = [i for i in key]
-	dec = [i ^ master_key[c % len(master_key)] for c,i in enumerate(key[10:])]
-	#key = [i ^ master_key[c % len(master_key)] for c,i in enumerate(key)]
-	#print(key)
-	with open("database.json", 'r') as f:
-		a=json.load(f)
+	try:
+		dec = [i ^ master_key[c % len(master_key)] for c,i in enumerate(key[10:])]
+		#key = [i ^ master_key[c % len(master_key)] for c,i in enumerate(key)]
+		#print(key)
+		with open("database.json", 'r') as f:
+			a=json.load(f)
 
-	temp={}
-	for i in a.keys():
-		keyword = i
-		password = base64.b85decode(a.get(i))
-		password = [i for i in password]
-		for i in range(len(dec)): #decrypt password with hardware key
-			password[i % len(password)] ^= dec[i]
+		temp={}
+		for i in a.keys():
+			keyword = i
+			password = base64.b85decode(a.get(i))
+			password = [i for i in password]
+			for i in range(len(dec)): #decrypt password with hardware key
+				password[i % len(password)] ^= dec[i]
+			
+			password = password[64:]
+			index = password.index(2)
+			new = password[0:index]
+			converted = ''.join([chr(i) for i in new])
+			#password = ''.join([chr(i) for i in password[64:password.index(2)]])#''.join([chr(i) for i in password[64:password.index(2)]])
+			split = converted.split('\x00')
+			temp[keyword] = split#[split[1], split[0]]
+		return temp
+	except ZeroDivisionError:
+		return False
 		
-		password = password[64:]
-		index = password.index(2)
-		new = password[0:index]
-		converted = ''.join([chr(i) for i in new])
-		#password = ''.join([chr(i) for i in password[64:password.index(2)]])#''.join([chr(i) for i in password[64:password.index(2)]])
-		split = converted.split('\x00')
-		temp[keyword] = split#[split[1], split[0]]
-	return temp
-	
 def encryptPass(password, keyword, master_key):
 	with open('hardware_key.key','rb') as file: #get hardware key
 		key = file.read()
@@ -94,7 +97,7 @@ def check_pass(password):
 
 
 def main_menu():
-	layout = [[sg.Button('Generate Password', key = 'genPass'), sg.Text('Master Password:'), sg.InputText('12345678', key='masterPass', password_char='*',  size=(15,0))],
+	layout = [[sg.Button('Generate Password', key = 'genPass'), sg.Text('Master Password:'), sg.InputText('', key='masterPass', password_char='*',  size=(15,0))],
 			  [sg.Text('Input password length:'), sg.Slider(range=(8,64), default_value=12, resolution=1, orientation='horizontal', key='passLen')],
 			  [sg.Text('Password will appear here:'), sg.InputText('', key='passwordText')],
 			  [sg.Text('-'*128)],
@@ -126,7 +129,7 @@ def main_menu():
 						
 				window['vaultText'].update(temp)
 				
-			except ValueError:
+			except Exception:
 				sg.popup('Invalid master password!')	
 				
 			
